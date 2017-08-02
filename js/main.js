@@ -120,9 +120,9 @@ var main = function() {
                             enemies[j].showDieAnimation = game.fps / 2;
                             enemies[j].alive = false;
                             enemies[j].img = enemies[j].dieimg;
-                            // plane.showDieAnimation = game.fps / 2;
-                            // plane.alive = false;
-                            // plane.img = game.images["planedie"];
+                            plane.showDieAnimation = game.fps / 2;
+                            plane.alive = false;
+                            plane.img = game.images["planedie"];
                         }
                     }
                 }
