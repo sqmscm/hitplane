@@ -10,11 +10,18 @@ var main = function() {
         bg: "img/bg.png",
         plane: "img/plane.png",
         bullet: "img/bullet.png",
+        bulletdie: "img/bulletdie.png",
         enemy1: "img/enemy1.png",
         enemy1die: "img/enemy1die.png",
         enemy2: "img/enemy2.png",
         enemy2die: "img/enemy2die.png",
         planedie: "img/planedie.png",
+        boss1: "img/boss1.png",
+        boss2: "img/boss2.png",
+        boss3: "img/boss3.png",
+        boss4: "img/boss4.png",
+        enemy3: "img/enemy3.png",
+        enemy3die: "img/enemy3die.png",
     }
     var game = Game(images, function() {
         game.setBackground(game.images["bg"]);
@@ -25,10 +32,12 @@ var main = function() {
         plane.y = canvas.height - plane.height;
         window.score = 0;
         window.over = false;
+        window.boss = false;
         var bullets = [];
         var enemies = [];
         var bulletCounts = 0;
         var enemyCounts = 0;
+        var boss;
         game.render = function() {
             game.draw(plane);
             //Fire 5 bullet per second
@@ -36,11 +45,12 @@ var main = function() {
                 var bullet = Bullet(game.images["bullet"], plane.x + plane.width / 2, plane.y)
                 bullet.x -= bullet.width / 2;
                 bullet.y -= bullet.height;
+                bullet.dieimg = game.images["bulletdie"];
                 bullets.push(bullet);
                 bulletCounts = 0;
             }
             //Enter two enemy per second
-            if (enemyCounts++ == game.fps/2) {
+            if (enemyCounts++ == game.fps / 2 && window.boss == false) {
                 var enemy;
                 var kind = Math.floor(Math.random() * 2);
                 if (kind == 0) {
@@ -61,23 +71,58 @@ var main = function() {
                 enemies.push(enemy);
                 enemyCounts = 0;
             }
+            //Enter the boss
+            if (!window.boss && window.score >= 1000) {
+                boss = Boss(game.images["boss1"]);
+                boss.stage2 = game.images["boss2"];
+                boss.stage3 = game.images["boss3"];
+                boss.dieimg = game.images["boss4"];
+                boss.y = -boss.height;
+                window.boss = true;
+            }
+
+            if (window.boss) {
+                game.draw(boss);
+                if (boss.alive) {
+                    for (var i = 0; i < bullets.length; i++) {
+                        if (bullets[i].alive)
+                            if (game.detCol(bullets[i], boss)) {
+                                boss.hit(game.fps);
+                                bullets[i].hit(game.fps);
+                                bullets[i].hitboss = true;
+                            }
+                    }
+                    if (game.detCol(plane, boss)) {
+                        plane.showDieAnimation = game.fps / 2;
+                        plane.alive = false;
+                        plane.img = game.images["planedie"];
+                    }
+                }
+                boss.move();
+                if (enemyCounts++ >= game.fps / 3) {
+                    var enemy = Enemy(game.images["enemy3"], game.images["enemy3die"]);
+                    enemy.width /= 2;
+                    enemy.height /= 2;
+                    enemy.x = Math.floor(Math.random() * (canvas.width - enemy.width));
+                    enemy.y = boss.height / 2;
+                    enemies.push(enemy);
+                    enemyCounts = 0;
+                }
+            }
             //Collide Detect
             for (var i = 0; i < bullets.length; i++) {
                 for (var j = 0; j < enemies.length; j++) {
-                    if (enemies[j].alive) {
+                    if (enemies[j].alive && bullets[i].alive) {
                         if (game.detCol(bullets[i], enemies[j])) {
                             bullets[i].alive = false;
-                            enemies[j].showDieAnimation = game.fps / 2;
-                            enemies[j].alive = false;
-                            enemies[j].img = enemies[j].dieimg;
-                            window.score += 100;
+                            enemies[j].hit(game.fps);
                         } else if (game.detCol(plane, enemies[j])) {
                             enemies[j].showDieAnimation = game.fps / 2;
                             enemies[j].alive = false;
                             enemies[j].img = enemies[j].dieimg;
-                            plane.showDieAnimation = game.fps / 2;
-                            plane.alive = false;
-                            plane.img = game.images["planedie"];
+                            // plane.showDieAnimation = game.fps / 2;
+                            // plane.alive = false;
+                            // plane.img = game.images["planedie"];
                         }
                     }
                 }
@@ -87,7 +132,8 @@ var main = function() {
                 game.draw(bullets[i]);
                 if (bullets[i].alive)
                     bullets[i].move();
-                if (bullets[i].y < 0 || !bullets[i].alive) {
+                if (bullets[i].y < 0 || (!bullets[i].alive && !bullets[i].hitboss) ||
+                    (!bullets[i].alive && bullets[i].hitboss && bullets[i].showDieAnimation-- == 0)) {
                     bullets.splice(i, 1);
                 }
             }
@@ -101,7 +147,7 @@ var main = function() {
                     enemies.splice(i, 1);
                 }
             }
-            if (!plane.alive && plane.showDieAnimation-- === 0)
+            if (!plane.alive && plane.showDieAnimation-- == 0)
                 window.over = true;
             game.updateScore();
         }
@@ -110,6 +156,12 @@ var main = function() {
         game.updateFPS();
         game.running();
     });
+    main.restLevel = function() {
+        if (game.fps < 1)
+            game.updateFPS(120);
+        game.end();
+        main();
+    }
     //reg callbacks
     // game.registerCallback('a', paddle.moveLeft);
     // game.registerCallback('d', paddle.moveRight);

@@ -83,12 +83,15 @@ var Game = function(images, runner) {
     o.updateScore = function() {
         if (window.over) {
             o.end();
+            var string = "Game Over~";
+            if (window.win)
+                string = "You Win!";
             canvas.height = canvas.height;
             context.font = "30px Courier";
             context.textAlign = 'center';
             context.textBaseline = 'middle';
             context.fillStyle = "#0000ff";
-            context.fillText("Game Over~", canvas.width / 2, canvas.height / 2 - 15);
+            context.fillText(string, canvas.width / 2, canvas.height / 2 - 15);
             context.fillText("Score: " + window.score, canvas.width / 2, canvas.height / 2 + 15);
             return;
         }
