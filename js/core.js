@@ -40,7 +40,7 @@ var Game = function(images, runner) {
     context.textBaseline = 'middle';
     context.fillStyle = "#0000ff";
     context.fillText("Loading...", canvas.width / 2, canvas.height / 2 - 15);
-    context.fillText("Please Wait" + window.score, canvas.width / 2, canvas.height / 2 + 15);
+    context.fillText("Please Wait", canvas.width / 2, canvas.height / 2 + 15);
     //set background
     o.setBackground = function(image) {
         o.bg = SImage(image);
