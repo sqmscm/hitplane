@@ -14,6 +14,7 @@ var Game = function(images, runner) {
         images: {},
         mouseControl: true,
         keyboardControl: true,
+        load: true,
     }
     var canvas = document.getElementById('viewer');
     var context = canvas.getContext('2d');
@@ -29,18 +30,27 @@ var Game = function(images, runner) {
             o.images[name] = img;
             loads.push(1);
             if (loads.length == names.length) {
+                o.load = false;
                 runner();
             }
         }
     }
     //Loading Scene
-    canvas.height = canvas.height;
-    context.font = "30px Courier";
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.fillStyle = "#0000ff";
-    context.fillText("Loading...", canvas.width / 2, canvas.height / 2 - 15);
-    context.fillText("Please Wait", canvas.width / 2, canvas.height / 2 + 15);
+    o.load = function() {
+        canvas.height = canvas.height;
+        context.font = "30px Courier";
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillStyle = "#0000ff";
+        context.fillText("Loading... " + Math.floor(loads.length / names.length) + "%", canvas.width / 2, canvas.height / 2 - 15);
+        context.fillText("Please Wait", canvas.width / 2, canvas.height / 2 + 15);
+        if (o.load) {
+            setTimeout(function() {
+                o.load();
+            }, 1000 / 10)
+        }
+    }
+    o.load();
     //set background
     o.setBackground = function(image) {
         o.bg = SImage(image);
