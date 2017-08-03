@@ -36,7 +36,7 @@ var Game = function(images, runner) {
         }
     }
     //Loading Scene
-    o.load = function() {
+    o.loading = function() {
         canvas.height = canvas.height;
         context.font = "30px Courier";
         context.textAlign = 'center';
@@ -46,11 +46,11 @@ var Game = function(images, runner) {
         context.fillText("Please Wait", canvas.width / 2, canvas.height / 2 + 15);
         if (o.load) {
             setTimeout(function() {
-                o.load();
+                o.loading();
             }, 1000 / 10)
         }
     }
-    o.load();
+    o.loading();
     //set background
     o.setBackground = function(image) {
         o.bg = SImage(image);
