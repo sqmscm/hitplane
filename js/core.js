@@ -12,50 +12,69 @@ var Game = function(images, runner) {
         fps: 0,
         collision: 0,
         images: {},
+        mouseControl: true,
+        keyboardControl: true,
     }
     var canvas = document.getElementById('viewer');
     var context = canvas.getContext('2d');
     //异步加载图片，全部加载完后才会运行！
     var loads = [];
-    var names = Object.keys(images)
+    var names = Object.keys(images);
     for (var i = 0; i < names.length; i++) {
-        let name = names[i]
-        var path = images[name]
-        let img = new Image()
-        img.src = path
+        let name = names[i];
+        var path = images[name];
+        let img = new Image();
+        img.src = path;
         img.onload = function() {
-            o.images[name] = img
-            loads.push(1)
+            o.images[name] = img;
+            loads.push(1);
             if (loads.length == names.length) {
                 runner();
             }
         }
     }
+    //Loading Scene
+    canvas.height = canvas.height;
+    context.font = "30px Courier";
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillStyle = "#0000ff";
+    context.fillText("Loading...", canvas.width / 2, canvas.height / 2 - 15);
+    context.fillText("Please Wait" + window.score, canvas.width / 2, canvas.height / 2 + 15);
     //set background
     o.setBackground = function(image) {
-        o.bg = CImage(image);
+        o.bg = SImage(image);
         o.bg.y = canvas.height - o.bg.img.height / 2;
         o.bg.width = canvas.width;
         o.bg.height = o.bg.img.height / 2;
     }
     //draw items
     o.draw = function(item) {
+        if (item.rotate) {
+            context.save(); //保存画布状态
+            context.translate(item.x + item.width / 2, item.y + item.height / 2); //以图像中心为原点
+            context.rotate(item.rotate * Math.PI / 180); //旋转
+            context.translate(-item.x - item.width / 2, -item.y - item.height / 2); //恢复原坐标系原点
+        }
         if (item.property == "image") {
             context.drawImage(item.img, item.x, item.y, item.width, item.height);
-            return;
-        }
-        context.fillStyle = item.color;
-        if (item.style == "rect") {
-            if (item.stroke) {
-                context.strokeStyle = item.stroke;
-                context.strokeRect(item.x, item.y, item.width, item.height);
+        } else {
+            context.fillStyle = item.color;
+            if (item.style == "rect") {
+                if (item.stroke) {
+                    context.strokeStyle = item.stroke;
+                    context.strokeRect(item.x, item.y, item.width, item.height);
+                }
+                context.fillRect(item.x, item.y, item.width, item.height);
+            } else if (item.style == "circle") {
+                context.beginPath();
+                context.arc(item.x, item.y, item.radius, 0, Math.PI * 2, true);
+                context.closePath();
+                context.fill();
             }
-            context.fillRect(item.x, item.y, item.width, item.height);
-        } else if (item.style == "circle") {
-            context.beginPath();
-            context.arc(item.x, item.y, item.radius, 0, Math.PI * 2, true);
-            context.closePath();
-            context.fill();
+        }
+        if (item.rotate) {
+            context.restore(); //恢复画布状态
         }
     }
     //events
@@ -103,6 +122,8 @@ var Game = function(images, runner) {
     o.enableDrag = function(element, mode) {
         var ofx, ofy;
         canvas.addEventListener('mousedown', function(event) {
+            if (!o.mouseControl)
+                return;
             if (o.isInside(element, event.offsetX, event.offsetY)) {
                 ofx = event.offsetX - element.x;
                 ofy = event.offsetY - element.y;
@@ -110,6 +131,8 @@ var Game = function(images, runner) {
             } else element.selected = false;
         });
         canvas.addEventListener('mousemove', function(event) {
+            if (!o.mouseControl)
+                return;
             if (element.style == "circle") {
                 element.width = element.radius;
                 element.height = element.radius;
@@ -130,6 +153,8 @@ var Game = function(images, runner) {
             }
         });
         canvas.addEventListener('mouseup', function(event) {
+            if (!o.mouseControl)
+                return;
             element.selected = false;
         });
     }
@@ -169,7 +194,7 @@ var Game = function(images, runner) {
         if (o.fps >= 1) {
             var keys = Object.keys(o.keys);
             for (var i = 0; i < keys.length; i++) {
-                if (o.keys[keys[i]])
+                if (o.keys[keys[i]] && o.keyboardControl)
                     o.callbacks[keys[i]]();
             }
             canvas.height = canvas.height; //clear canvas
