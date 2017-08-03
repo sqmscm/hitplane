@@ -42,7 +42,7 @@ var Game = function(images, runner) {
         context.textAlign = 'center';
         context.textBaseline = 'middle';
         context.fillStyle = "#0000ff";
-        context.fillText("Loading... " + Math.floor(loads.length / names.length) + "%", canvas.width / 2, canvas.height / 2 - 15);
+        context.fillText("Loading... " + Math.floor(loads.length / names.length * 100) + "%", canvas.width / 2, canvas.height / 2 - 15);
         context.fillText("Please Wait", canvas.width / 2, canvas.height / 2 + 15);
         if (o.load) {
             setTimeout(function() {
