@@ -107,7 +107,7 @@ var main = function() {
                         window.win = true;
                     }
                 }
-                if (boss.alive) {
+                if (boss.alive && plane.alive) {
                     for (var i = 0; i < bullets.length; i++) {
                         if (bullets[i].alive)
                             if (game.detCol(bullets[i], boss)) {
